@@ -1,0 +1,11 @@
+[=== Window Partioning ===]
+
+Region Colour      Description
+_______________    ___________________________
+White              Border
+Red                Map View
+Orange & Yellow    Stats and Misc. Information
+Green & Blue       Event Log
+
+Refer to image for dimensions. Each pixel
+is a character cell.

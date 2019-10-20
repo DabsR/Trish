@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "stdbool.h": "c",
+        "player.h": "c",
+        "tile.h": "c",
+        "utilities.h": "c",
+        "monster.h": "c",
+        "list.h": "c",
+        "string.h": "c",
+        "array": "c",
+        "vector": "c",
+        "xstring": "c",
+        "system_error": "c"
+    }
+}
