@@ -8,7 +8,7 @@ Set in a futuristic jazzy setting akin to the 1920's, you are a detective invest
 Before you can build, you must have the Developer Command Prompt installed via some recent version of Visual Studio (2015-2019) as well as Python 3. Run the python-win-x86.py file from the Developer Command Prompt. You dont need compat_stupid.h and comapat_stupid.c so you may replace them with empty versions of themselves.
 
 # Building for MacOS
-1) Install libtcod's dependencies via [homebrew](brew.sh)
+1) Install libtcod's dependencies via [homebrew](https://www.brew.sh)
 1) Clone or download this (obviously)
 1) Navigate to the master directory and run this horrendous abomination of a command in a terminal
 1) `clang src/*.c Vendor/Libtcod/lib/MacOS/libtcod.dylib -I'Vendor/Libtcod/include/libtcod'`
