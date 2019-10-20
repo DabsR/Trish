@@ -20,7 +20,7 @@ typedef enum GameMode
 
 } GameMode;
 
-GameMode gamemode;
+GameMode gamemode = GAMEMODE_EDITOR;
 
 
 typedef enum AppState
@@ -48,13 +48,18 @@ Player   *player    = NULL;
 
 typedef enum EditorState
 {
-    EDITORSTATE_TILE,
-    EDITORSTATE_MONSTER,
+    EDITORSTATE_PICK_TILE,
+    EDITORSTATE_PLACE_TILE,
+    EDITORSTATE_PICK_MONSTER,
+    EDITORSTATE_PLACE_MONSTER,
     EDITORSTATE_PAUSE
 
 } EditorState;
 
-EditorState editorstate        = EDITORSTATE_TILE;
+EditorState editorstate        = EDITORSTATE_PLACE_TILE;
+Tile       *selected_tile      = NULL;
+int32_t     select_x           = 0;
+int32_t     select_y           = 0;
 TileType    editor_tiletype    = TILE_AIR;
 MonsterType editor_monstertype = MONSTER_SLIME;
 
@@ -103,7 +108,83 @@ void simulate_game()
 
 void simulate_editor()
 {
+    TCOD_mouse_t mouse = TCOD_mouse_get_status();
+    screen_to_map(mouse.cx, mouse.cy, &select_x, &select_y);
+    selected_tile = map_get_tile(map, select_x, select_y);
 
+    TCOD_key_t key;
+    TCOD_sys_check_for_event(TCOD_EVENT_KEY_PRESS, &key, NULL);
+
+    if (key.c == 'p')
+    {
+        switch (editorstate)
+        {
+            case EDITORSTATE_PICK_TILE:     editorstate = EDITORSTATE_PLACE_TILE;    break;
+            case EDITORSTATE_PICK_MONSTER:  editorstate = EDITORSTATE_PLACE_MONSTER; break;
+            case EDITORSTATE_PLACE_TILE:    editorstate = EDITORSTATE_PICK_TILE;    break;
+            case EDITORSTATE_PLACE_MONSTER: editorstate = EDITORSTATE_PICK_MONSTER;    break;
+            default: break;
+        }
+    }
+    if (key.c == 't')
+    {
+        editorstate = EDITORSTATE_PLACE_TILE;
+    }
+    else if (key.c == 'm')
+    {
+        editorstate = EDITORSTATE_PLACE_MONSTER;
+    }
+
+    switch (editorstate)
+    {
+        case EDITORSTATE_PLACE_MONSTER:
+        case EDITORSTATE_PLACE_TILE:
+        {
+            TCOD_console_clear(0);
+            map_draw(map);
+
+            if (selected_tile)
+            {
+                xor_color(0, mouse.cx, mouse.cy, TCOD_white);
+
+                if (mouse.lbutton_pressed)
+                {
+                    TileTypeInfo *old_type = selected_tile->type_info;
+                    TileTypeInfo *new_type = tile_registry_lookup_type((selected_tile->type_info->type + 1) % __TILE_ENUM_LENGTH__);
+
+                    selected_tile->type_info = new_type;
+                }
+
+                TCOD_console_print(0, STATSVIEW_X, STATSVIEW_Y, "(%i, %i) %s", select_x, select_y, selected_tile->type_info->name);
+
+                if (selected_tile->monster)
+                {
+                    TCOD_console_print(0, STATSVIEW_X, STATSVIEW_Y + 1, "%s", selected_tile->monster->type_info->name);
+                }
+                else if (selected_tile->player)
+                {
+                    TCOD_console_print(0, STATSVIEW_X, STATSVIEW_Y + 1, "Player");
+                }
+            }
+            else
+            {
+                TCOD_console_print(0, STATSVIEW_X, STATSVIEW_Y, "(%i, %i) None");
+            }
+
+            TCOD_console_flush();
+
+            break;
+        }
+        case EDITORSTATE_PICK_TILE:
+        case EDITORSTATE_PICK_MONSTER:
+        {
+            TCOD_console_clear(0);
+            TCOD_console_print(0, 0, 0, "Pick an item!");
+            TCOD_console_flush();
+
+            break;
+        }
+    }
 }
 
 
@@ -130,16 +211,6 @@ int main(int argc, char **argv)
 
                 map     = map_create(40, 22);
                 player  = player_create(map, 3, 5);
-
-                map->tiles[5 + 0 * map->width].type_info = tile_registry_lookup_type(TILE_WALL);
-                map->tiles[5 + 1 * map->width].type_info = tile_registry_lookup_type(TILE_WALL);
-                map->tiles[5 + 2 * map->width].type_info = tile_registry_lookup_type(TILE_WALL);
-                map->tiles[5 + 3 * map->width].type_info = tile_registry_lookup_type(TILE_WALL);
-                map->tiles[5 + 4 * map->width].type_info = tile_registry_lookup_type(TILE_WALL);
-                map->tiles[5 + 6 * map->width].type_info = tile_registry_lookup_type(TILE_WALL);
-                map->tiles[5 + 7 * map->width].type_info = tile_registry_lookup_type(TILE_WALL);
-                map->tiles[6 + 7 * map->width].type_info = tile_registry_lookup_type(TILE_WALL);
-                map->tiles[7 + 7 * map->width].type_info = tile_registry_lookup_type(TILE_WALL);
 
                 monster_create(MONSTER_SLIME, map, 1, 1);
                 monster_create(MONSTER_SLIME, map, 7, 3);

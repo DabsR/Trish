@@ -25,6 +25,7 @@ void tile_registry_initialise()
 
     memset(tile_registry, 0, sizeof(tile_registry));
 
+    tile_registry[TILE_AIR].type       = TILE_AIR;
     tile_registry[TILE_AIR].name       = "Air";
     tile_registry[TILE_AIR].symbol     = ' ';
     tile_registry[TILE_AIR].is_visible = 1;
@@ -34,6 +35,7 @@ void tile_registry_initialise()
 
 
 
+    tile_registry[TILE_FLOOR].type       = TILE_FLOOR;
     tile_registry[TILE_FLOOR].name       = "Floor";
     tile_registry[TILE_FLOOR].symbol     = '.';
     tile_registry[TILE_FLOOR].is_visible = 1;
@@ -43,6 +45,7 @@ void tile_registry_initialise()
 
 
 
+    tile_registry[TILE_WALL].type       = TILE_WALL;
     tile_registry[TILE_WALL].name       = "Wall";
     tile_registry[TILE_WALL].symbol     = '#';
     tile_registry[TILE_WALL].is_visible = 1;

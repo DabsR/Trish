@@ -1,8 +1,8 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include <stdlib.h>
 #include <stdint.h>
-#include "compat_stupid.h"
 
 
 
