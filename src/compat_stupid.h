@@ -1,4 +1,4 @@
-/* doesnt need a c file hopefully
+/* "hopefully you wont need to use this."
  * This is a compat header if your compiler wants to be stupid
  * cant blame you
  * use it!
