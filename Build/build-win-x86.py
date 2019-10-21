@@ -44,7 +44,7 @@ executable_path  = os.path.join(output_directory, output_file_name)
 ### Compiler Setup ###
 ######################
 
-
+os.mkdir(output_directory)
 
 include_directory_arguments = ''
 library_directory_arguments = ''
