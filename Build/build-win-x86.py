@@ -10,9 +10,9 @@ if os.name != 'nt':
 ### Options ###
 ###############
 
-
-# Use --autorun when calling this script to override to true. 
-auto_run_game = False
+                      # Option Name
+auto_run_game = False # --autorun
+skip_compile  = False # --skip-compile
 
 include_directories = [
     '../Vendor/Libtcod/include/'
@@ -44,6 +44,12 @@ executable_path  = os.path.join(output_directory, output_file_name)
 ### Compiler Setup ###
 ######################
 
+if len(sys.argv) > 0:
+    if '--autorun' in sys.argv:
+        auto_run_game = True
+    if '--skip-compile' in sys.argv:
+        skip_compile = True
+
 if not os.path.exists(output_directory):
     os.mkdir(output_directory)
 
@@ -70,21 +76,23 @@ if (os.path.exists(output_directory) == False):
 import sys
 
 
+success = True
 
-command = f'cl.exe -DUNICODE -D_UNICODE /Fe"{output_directory}{output_file_name}" {include_directory_arguments} {source_file_arguments} /link {library_directory_arguments} {library_arguments}'
-success = (os.system(command) == 0)
+if (skip_compile == False):
+    command = f'cl.exe -DUNICODE -D_UNICODE /Fe"{output_directory}{output_file_name}" {include_directory_arguments} {source_file_arguments} /link {library_directory_arguments} {library_arguments}'
+    success = (os.system(command) == 0)
 
+    if success:
+        print("Compilation successful!")
 
-# Clean files
-file_names = os.listdir()
+    # Clean files
+    file_names = os.listdir()
 
-for file_name in file_names:
-    if file_name.endswith('.obj'):
-        os.remove(file_name)
+    for file_name in file_names:
+        if file_name.endswith('.obj'):
+            os.remove(file_name)
 
 if success:
-    print("Compilation successful!")
-
     for directory in library_directories:
         file_names = os.listdir(directory)
 
@@ -97,10 +105,6 @@ if success:
 
         for file_name in file_names:
             copyfile(os.path.join(directory, file_name), os.path.join(output_directory, file_name))
-
-    if len(sys.argv) > 0:
-        if '--autorun' in sys.argv:
-            auto_run_game = True
     
     if (auto_run_game):
         os.system(f'"{executable_path}"')
