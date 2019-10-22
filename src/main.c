@@ -48,9 +48,8 @@ Player   *player    = NULL;
 
 typedef enum EditorState
 {
-    EDITORSTATE_PICK_TILE,
+    EDITORSTATE_PICK,
     EDITORSTATE_PLACE_TILE,
-    EDITORSTATE_PICK_MONSTER,
     EDITORSTATE_PLACE_MONSTER,
     EDITORSTATE_PAUSE
 
@@ -115,76 +114,7 @@ void simulate_editor()
     TCOD_key_t key;
     TCOD_sys_check_for_event(TCOD_EVENT_KEY_PRESS, &key, NULL);
 
-    if (key.c == 'p')
-    {
-        switch (editorstate)
-        {
-            case EDITORSTATE_PICK_TILE:     editorstate = EDITORSTATE_PLACE_TILE;    break;
-            case EDITORSTATE_PICK_MONSTER:  editorstate = EDITORSTATE_PLACE_MONSTER; break;
-            case EDITORSTATE_PLACE_TILE:    editorstate = EDITORSTATE_PICK_TILE;    break;
-            case EDITORSTATE_PLACE_MONSTER: editorstate = EDITORSTATE_PICK_MONSTER;    break;
-            default: break;
-        }
-    }
-    if (key.c == 't')
-    {
-        editorstate = EDITORSTATE_PLACE_TILE;
-    }
-    else if (key.c == 'm')
-    {
-        editorstate = EDITORSTATE_PLACE_MONSTER;
-    }
-
-    switch (editorstate)
-    {
-        case EDITORSTATE_PLACE_MONSTER:
-        case EDITORSTATE_PLACE_TILE:
-        {
-            TCOD_console_clear(0);
-            map_draw(map);
-
-            if (selected_tile)
-            {
-                xor_color(0, mouse.cx, mouse.cy, TCOD_white);
-
-                if (mouse.lbutton_pressed)
-                {
-                    TileTypeInfo *old_type = selected_tile->type_info;
-                    TileTypeInfo *new_type = tile_registry_lookup_type((selected_tile->type_info->type + 1) % __TILE_ENUM_LENGTH__);
-
-                    selected_tile->type_info = new_type;
-                }
-
-                TCOD_console_print(0, STATSVIEW_X, STATSVIEW_Y, "(%i, %i) %s", select_x, select_y, selected_tile->type_info->name);
-
-                if (selected_tile->monster)
-                {
-                    TCOD_console_print(0, STATSVIEW_X, STATSVIEW_Y + 1, "%s", selected_tile->monster->type_info->name);
-                }
-                else if (selected_tile->player)
-                {
-                    TCOD_console_print(0, STATSVIEW_X, STATSVIEW_Y + 1, "Player");
-                }
-            }
-            else
-            {
-                TCOD_console_print(0, STATSVIEW_X, STATSVIEW_Y, "(%i, %i) None");
-            }
-
-            TCOD_console_flush();
-
-            break;
-        }
-        case EDITORSTATE_PICK_TILE:
-        case EDITORSTATE_PICK_MONSTER:
-        {
-            TCOD_console_clear(0);
-            TCOD_console_print(0, 0, 0, "Pick an item!");
-            TCOD_console_flush();
-
-            break;
-        }
-    }
+    
 }
 
 
