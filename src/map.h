@@ -31,7 +31,6 @@ typedef struct Map
 
 Map *  map_create(int32_t width, int32_t height);
 void   map_free(Map *map);
-void   map_draw(Map *map);
 Tile * map_get_tile(Map *map, int32_t x, int32_t y);
 
 void   screen_to_map(int32_t cx, int32_t cy, int32_t *out_tx, int32_t *out_ty);  

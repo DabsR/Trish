@@ -7,7 +7,8 @@
 #include "player.h"
 #include "monster.h"
 #include "utilities.h"
-#include "draw_util.h"
+#include "view.h"
+#include "render.h"
 
 #include "global_settings.h"
 
@@ -45,6 +46,8 @@ GameState gamestate = GAMESTATE_MOVE;
 Map      *map       = NULL;
 Player   *player    = NULL;
 
+MapView   mapview;
+
 
 typedef enum EditorState
 {
@@ -71,7 +74,7 @@ void simulate_game()
         case GAMESTATE_MOVE:
         {
             TCOD_console_clear(0);
-            map_draw(map);
+            render_map(map, &mapview);
             TCOD_console_flush();
 
             TCOD_key_t key;
@@ -141,6 +144,15 @@ int main(int argc, char **argv)
 
                 map     = map_create(40, 22);
                 player  = player_create(map, 3, 5);
+                
+                // @Incomplete: I want to remove these macros
+                // eventually. They were integrated here with the
+                // view for compatibility.
+                mapview.x       = MAPVIEW_X;
+                mapview.y       = MAPVIEW_Y;
+                mapview.width   = MAPVIEW_WIDTH;
+                mapview.height  = MAPVIEW_HEIGHT;                
+                mapview.console = 0;
 
                 monster_create(MONSTER_SLIME, map, 1, 1);
                 monster_create(MONSTER_SLIME, map, 7, 3);

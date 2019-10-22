@@ -55,44 +55,6 @@ void map_free(Map *map)
     free(map);
 }
 
-void map_draw(Map *map)
-{
-    // @Incomplete: We need to account
-    // for map scrolling.
-
-    for (size_t y = 0; y < map->height; y++)
-    {
-        for (size_t x = 0; x < map->width; x++)
-        {
-            Tile *tile     = &map->tiles[x + y * map->width];
-            int32_t draw_x = MAPVIEW_X + x;
-            int32_t draw_y = MAPVIEW_Y + y;
-
-            if (!tile->type_info->is_visible) continue;
-
-            // The background of the tile is drawn regardless
-            // of what is present on the tile.
-            TCOD_console_set_char_background(0, draw_x, draw_y, tile->type_info->back_color, 0);
-                
-            if (tile->player == NULL && tile->monster == NULL)
-            {
-                TCOD_console_set_char_foreground(0, draw_x, draw_y, tile->type_info->fore_color);
-                TCOD_console_set_char(0, draw_x, draw_y, tile->type_info->symbol);
-            }
-            else if (tile->monster != NULL)
-            {
-                TCOD_console_set_char_foreground(0, draw_x, draw_y, tile->monster->type_info->fore_color);    
-                TCOD_console_set_char(0, draw_x, draw_y, tile->monster->type_info->symbol);
-            }
-            else if (tile->player != NULL)
-            {
-                TCOD_console_set_char_foreground(0, draw_x, draw_y, TCOD_dark_cyan);
-                TCOD_console_set_char(0, draw_x, draw_y, '@');
-            }
-        }
-    }
-}
-
 Tile * map_get_tile(Map *map, int32_t x, int32_t y)
 {
     // @Cleanup
