@@ -14,6 +14,8 @@ typedef struct MapView
     int32_t width;
     int32_t height;
 
+    int32_t render_entities;
+
     TCOD_console_t console;
 
 } MapView;

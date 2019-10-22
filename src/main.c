@@ -122,10 +122,10 @@ void simulate_editor()
         {
             editorstate = editorstate_before_pick;
         }
-        else
+        else if
         {
-            editorstate = EDITORSTATE_PICK;
             editorstate_before_pick = editorstate;
+            editorstate = EDITORSTATE_PICK;
         }
     }
 
