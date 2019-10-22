@@ -46,7 +46,9 @@ GameState gamestate = GAMESTATE_MOVE;
 Map      *map       = NULL;
 Player   *player    = NULL;
 
-MapView   mapview;
+EventView event_view;
+MapView   map_view;
+StatsView stats_view;
 
 
 typedef enum EditorState
@@ -75,7 +77,7 @@ void simulate_game()
         case GAMESTATE_MOVE:
         {
             TCOD_console_clear(0);
-            render_map(map, &mapview);
+            render_map(map, &map_view);
             TCOD_console_flush();
 
             TCOD_key_t key;
@@ -131,7 +133,7 @@ void simulate_editor()
 
     if (key.vk == TCODK_1)
     {
-        mapview.render_entities = !mapview.render_entities;
+        map_view.render_entities = !map_view.render_entities;
     }
 
     TCOD_console_clear(0);
@@ -141,7 +143,7 @@ void simulate_editor()
         case EDITORSTATE_PLACE_TILE:
         case EDITORSTATE_PLACE_MONSTER:
         {
-            screen_to_map(&mapview, mouse.cx, mouse.cy, &select_x, &select_y);
+            screen_to_map(&map_view, mouse.cx, mouse.cy, &select_x, &select_y);
             selected_tile = map_get_tile(map, select_x, select_y);
 
             if (mouse.lbutton)
@@ -188,35 +190,31 @@ void simulate_editor()
                 }
             }
 
-            render_map(map, &mapview);
+            render_map(map, &map_view);
             
             if (selected_tile)
             {
                 render_mask_xor(0, mouse.cx, mouse.cy, TCOD_white);
             }
 
-            if (mapview.render_entities)
+            if (map_view.render_entities)
             {
-                // @Incomplete: Still using the view macros here! Migrate to view structures.
-                TCOD_console_printf(0, STATSVIEW_X, STATSVIEW_Y, "Entities (Show)");
+                TCOD_console_printf(0, stats_view.x, stats_view.y, "Entities (Show)");
             }
             else
             {
-                // @Incomplete: Still using the view macros here! Migrate to view structures.
-                TCOD_console_printf(0, STATSVIEW_X, STATSVIEW_Y, "Entities (Hide)");
+                TCOD_console_printf(0, stats_view.x, stats_view.y, "Entities (Hide)");
             }
 
             if (editorstate == EDITORSTATE_PLACE_TILE)
             {
-                // @Incomplete: Still using the view macros here! Migrate to view structures.
                 TileTypeInfo *type_info = tile_registry_lookup_type(editor_tiletype);
-                TCOD_console_printf(0, STATSVIEW_X, STATSVIEW_Y + 1, "Placing tile %s", type_info->name);
+                TCOD_console_printf(0, stats_view.x, stats_view.y + 1, "Placing tile %s", type_info->name);
             }
             else if (editorstate == EDITORSTATE_PLACE_MONSTER)
             {
                 MonsterTypeInfo *type_info = monster_registry_lookup_type(editor_monstertype);
-                // @Incomplete: Still using the view macros here! Migrate to view structures.
-                TCOD_console_printf(0, STATSVIEW_X, STATSVIEW_Y + 1, "Placing monster %s", type_info->name);
+                TCOD_console_printf(0, stats_view.x, stats_view.y + 1, "Placing monster %s", type_info->name);
             }
             
 
@@ -324,16 +322,29 @@ int main(int argc, char **argv)
 
                 map     = map_create(40, 22);
                 player  = player_create(map, 3, 5);
+
+
                 
-                // @Incomplete: I want to remove these macros
-                // eventually. They were integrated here with the
-                // view for compatibility.
-                mapview.x       = MAPVIEW_X;
-                mapview.y       = MAPVIEW_Y;
-                mapview.width   = MAPVIEW_WIDTH;
-                mapview.height  = MAPVIEW_HEIGHT;    
-                mapview.render_entities = 1;            
-                mapview.console = 0;
+                event_view.x       = 0;
+                event_view.y       = 0;
+                event_view.width   = 40;
+                event_view.height  = 3;
+                event_view.console = 0;
+
+                map_view.x               = 0;
+                map_view.y               = 4;
+                map_view.width           = 40;
+                map_view.height          = 22;
+                map_view.render_entities = 1;            
+                map_view.console         = 0;
+
+                stats_view.x       = 0;
+                stats_view.y       = 27;
+                stats_view.width   = 40;
+                stats_view.height  = 3;
+                stats_view.console = 0;
+
+
 
                 monster_create(MONSTER_SLIME, map, 1, 1);
                 monster_create(MONSTER_SLIME, map, 7, 3);

@@ -11,6 +11,11 @@
 
 
 
+void render_events(EventView *view)
+{
+    // @Incomplete Render event log here.
+}
+
 void render_map(Map *map, MapView *view)
 {
     // @Incomplete: We need to account
@@ -77,6 +82,11 @@ void render_map(Map *map, MapView *view)
             }
         }
     }
+}
+
+void render_stats(Player *player, StatsView *view)
+{
+    // @Incomplete Render stats here.
 }
 
 void render_rect(TCOD_Console *console, int32_t x, int32_t y, int32_t width, int32_t height, char c, TCOD_color_t fore_color, TCOD_color_t back_color)
