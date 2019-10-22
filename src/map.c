@@ -39,13 +39,15 @@ Map * map_create(int32_t width, int32_t height)
 
 void map_free(Map *map)
 {
+    map->is_being_freed = 1;
+
     player_free(map->player);
 
     LinkedNode *node = map->monsters->head;
     while (node)
     {
         Monster* monster = (Monster*) node->data;
-        monster_free(monster); 
+        monster_free(monster, map); 
 
         node = node->next;
     }

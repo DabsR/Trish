@@ -135,6 +135,7 @@ void simulate_editor()
     switch (editorstate)
     {
         case EDITORSTATE_PLACE_TILE:
+        case EDITORSTATE_PLACE_MONSTER:
         {
             screen_to_map(&mapview, mouse.cx, mouse.cy, &select_x, &select_y);
             selected_tile = map_get_tile(map, select_x, select_y);
@@ -147,10 +148,32 @@ void simulate_editor()
                 // that copy tiles like in RPG maker. Not important right now.
                 //
                 // Jade (22 October 2019)
-
+                
                 if (selected_tile)
                 {
-                    selected_tile->type_info = tile_registry_lookup_type(editor_tiletype);
+                    if (editorstate == EDITORSTATE_PLACE_TILE)
+                    {
+                        selected_tile->type_info = tile_registry_lookup_type(editor_tiletype);
+                        
+                        // @Incomplete: Maybe we want ghost-like enemies?
+                        // Remove the monster if the tile is solid because that is impossible.
+                        if (selected_tile->type_info->is_solid && selected_tile->monster)
+                        {
+                            monster_free(selected_tile->monster, map);
+                        }
+                    }
+                    else if (editorstate == EDITORSTATE_PLACE_MONSTER)
+                    {
+                        if (selected_tile->monster)
+                        {
+                            selected_tile->monster->type_info = monster_registry_lookup_type(editor_monstertype);
+                            selected_tile->monster->health    = selected_tile->monster->type_info->health;
+                        }
+                        else
+                        {
+                            monster_create(editor_monstertype, map, select_x, select_y);
+                        }
+                    }
                 }
             }
 
@@ -166,33 +189,6 @@ void simulate_editor()
 
 
 
-        case EDITORSTATE_PLACE_MONSTER:
-        {
-            screen_to_map(&mapview, mouse.cx, mouse.cy, &select_x, &select_y);
-            selected_tile = map_get_tile(map, select_x, select_y);
-
-            if (mouse.lbutton_pressed)
-            {
-                if (selected_tile->monster)
-                {
-                    selected_tile->monster->type_info = monster_registry_lookup_type(editor_monstertype);
-                    selected_tile->monster->health    = selected_tile->monster->type_info->health;
-                }
-                else
-                {
-                    monster_create(editor_monstertype, map, select_x, select_y);
-                }
-            }
-
-            render_map(map, &mapview);
-            
-            if (selected_tile)
-            {
-                render_mask_xor(0, mouse.cx, mouse.cy, TCOD_white);
-            }
-
-            break;
-        }
 
 
 
@@ -223,6 +219,7 @@ void simulate_editor()
                     {
                         editor_tiletype = type;
                         editorstate = EDITORSTATE_PLACE_TILE;
+                        break;
                     }
                 }
             }

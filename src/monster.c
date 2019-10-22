@@ -60,10 +60,22 @@ Monster * monster_create(MonsterType type, Map *map, int32_t x, int32_t y)
     return monster;
 }
 
-void monster_free(Monster *monster)
+void monster_free(Monster *monster, Map *map)
 {
-    assert(monster && monster->tile->monster == monster);
+    assert(monster);
+    assert(monster->tile->monster == monster);
+    assert(map);
+
+    // We do not want to remove the monster from the map
+    // list if it is currently being freed because this
+    // function is called from map_free in a loop iterating
+    // over the list.
+    if (!map->is_being_freed)
+    {
+        linkedlist_remove(map->monsters, monster);
+    }
 
     monster->tile->monster = NULL;
+    
     free(monster);
 }

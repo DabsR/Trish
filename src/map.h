@@ -25,6 +25,7 @@ typedef struct Map
     Player     *player;
     LinkedList *monsters;
 
+    int32_t is_being_freed;
 
 } Map;
 

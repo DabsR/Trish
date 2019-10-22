@@ -50,7 +50,7 @@ typedef struct Monster
 
 
 Monster * monster_create(MonsterType type, Map *map, int32_t x, int32_t y);
-void      monster_free(Monster *monster);
+void      monster_free(Monster *monster, Map *map);
 
 void              monster_registry_initialise();
 MonsterTypeInfo * monster_registry_lookup_type(MonsterType type);

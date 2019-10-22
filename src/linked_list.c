@@ -82,15 +82,39 @@ void linkedlist_remove(LinkedList *list, void *data)
         }
     }
 
-    if (node)
+    assert(node);
+    // if (node)
     {
-        // Join the gap from removing the node.
+        // We need to join the gap from removing the node.
         
         LinkedNode *previous_node = node->previous;
         LinkedNode *next_node     = node->next;
-
-        previous_node->next = next_node;
-        next_node->previous = previous_node;
+        
+        // If the node is nested between two nodes.
+        if (previous_node && next_node)
+        {
+            previous_node->next = next_node;
+            next_node->previous = previous_node;
+        }
+        // If the node has no preceeding nodes.
+        else if (next_node)
+        {
+            list->head = next_node;
+            next_node->previous = NULL;
+        }
+        // If the node has no succeeding nodes.
+        else if (previous_node)
+        {
+            list->tail = previous_node;
+            previous_node->next = NULL;
+        }
+        // If this was the only node.
+        else
+        {
+            list->head = NULL;
+            list->tail = NULL;
+        }
+        
 
         free(node);
     }
