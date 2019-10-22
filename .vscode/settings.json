@@ -10,6 +10,8 @@
         "array": "c",
         "vector": "c",
         "xstring": "c",
-        "system_error": "c"
+        "system_error": "c",
+        "global_settings.h": "c",
+        "libtcod.h": "c"
     }
 }
