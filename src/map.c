@@ -3,6 +3,7 @@
 #include "player.h"
 #include "monster.h"
 #include "linked_list.h"
+#include "view.h"
 #include "utilities.h"
 #include "global_settings.h"
 
@@ -77,8 +78,8 @@ Tile * map_get_tile(Map *map, int32_t x, int32_t y)
     }
 }
 
-void   screen_to_map(int32_t cx, int32_t cy, int32_t *out_tx, int32_t *out_ty)
+void screen_to_map(MapView *view, int32_t cx, int32_t cy, int32_t *out_tx, int32_t *out_ty)
 {
-    *out_tx = cx - MAPVIEW_X;
-    *out_ty = cy - MAPVIEW_Y;
+    *out_tx = cx - view->x;
+    *out_ty = cy - view->y;
 }
