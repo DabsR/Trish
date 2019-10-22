@@ -103,7 +103,7 @@ void render_swap_foreground_and_background(TCOD_Console *console, int32_t x, int
     TCOD_console_set_char_foreground(console, x, y, back_color);
 }
 
-void render_filter_xor(TCOD_Console *console, int32_t x, int32_t y, TCOD_color_t mask)
+void render_mask_xor(TCOD_Console *console, int32_t x, int32_t y, TCOD_color_t mask)
 {
     TCOD_color_t fore_color = TCOD_console_get_char_foreground(console, x, y);
     TCOD_color_t back_color = TCOD_console_get_char_background(console, x, y);
