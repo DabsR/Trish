@@ -20,4 +20,30 @@ typedef struct MapView
 
 } MapView;
 
+
+
+typedef struct EventView
+{
+    int32_t x;
+    int32_t y;
+    int32_t width;
+    int32_t height;
+
+    TCOD_console_t console;
+    
+} EventView;
+
+
+
+typedef struct StatsView
+{
+    int32_t x;
+    int32_t y;
+    int32_t width;
+    int32_t height;
+
+    TCOD_console_t console;
+
+} StatsView;
+
 #endif
