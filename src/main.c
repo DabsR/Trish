@@ -111,13 +111,160 @@ void simulate_game()
 void simulate_editor()
 {
     TCOD_mouse_t mouse = TCOD_mouse_get_status();
-    screen_to_map(mouse.cx, mouse.cy, &select_x, &select_y);
-    selected_tile = map_get_tile(map, select_x, select_y);
 
     TCOD_key_t key;
     TCOD_sys_check_for_event(TCOD_EVENT_KEY_PRESS, &key, NULL);
 
-    
+    if (key.vk == TCODK_TAB)
+    {
+        editorstate = EDITORSTATE_PICK;
+    }
+
+    if (key.vk == TCODK_1)
+    {
+        editorstate = EDITORSTATE_PLACE_TILE;
+    }
+
+    if (key.vk == TCODK_2)
+    {
+        editorstate = EDITORSTATE_PLACE_MONSTER;
+    }
+
+    TCOD_console_clear(0);
+
+    switch (editorstate)
+    {
+        case EDITORSTATE_PLACE_TILE:
+        {
+            screen_to_map(&mapview, mouse.cx, mouse.cy, &select_x, &select_y);
+            selected_tile = map_get_tile(map, select_x, select_y);
+
+            if (mouse.lbutton)
+            {
+                // @Incomplete: It would be better to have two selected tile types:
+                // One for the left mouse button and one for the right mouse button
+                // just like most image editing software. Or perhaps we should make
+                // that copy tiles like in RPG maker. Not important right now.
+                //
+                // Jade (22 October 2019)
+
+                if (selected_tile)
+                {
+                    selected_tile->type_info = tile_registry_lookup_type(editor_tiletype);
+                }
+            }
+
+            render_map(map, &mapview);
+            
+            if (selected_tile)
+            {
+                render_mask_xor(0, mouse.cx, mouse.cy, TCOD_white);
+            }
+
+            break;
+        }
+
+
+
+        case EDITORSTATE_PLACE_MONSTER:
+        {
+            screen_to_map(&mapview, mouse.cx, mouse.cy, &select_x, &select_y);
+            selected_tile = map_get_tile(map, select_x, select_y);
+
+            if (mouse.lbutton_pressed)
+            {
+                if (selected_tile->monster)
+                {
+                    selected_tile->monster->type_info = monster_registry_lookup_type(editor_monstertype);
+                    selected_tile->monster->health    = selected_tile->monster->type_info->health;
+                }
+                else
+                {
+                    monster_create(editor_monstertype, map, select_x, select_y);
+                }
+            }
+
+            render_map(map, &mapview);
+            
+            if (selected_tile)
+            {
+                render_mask_xor(0, mouse.cx, mouse.cy, TCOD_white);
+            }
+
+            break;
+        }
+
+
+
+        case EDITORSTATE_PICK:
+        {
+            for (size_t i = 0; i < __TILE_ENUM_LENGTH__; i++)
+            {
+                TileType      type      = (TileType) i;
+                TileTypeInfo *type_info = tile_registry_lookup_type(type);
+
+                char   option_text[20];
+                size_t option_text_length;
+
+                sprintf(option_text, "%li %s", i, type_info->name);
+                option_text_length = strlen(option_text);
+
+                TCOD_console_print(0, 0, i, option_text);
+
+                // Check if the mouse is over the option and highlight it.
+                if (mouse.cx >= 0 && mouse.cx < option_text_length && mouse.cy == i)
+                {
+                    for (size_t j = 0; j < option_text_length; j++)
+                    {
+                        render_swap_foreground_and_background(0, j, i);
+                    }
+
+                    if (mouse.lbutton_pressed)
+                    {
+                        editor_tiletype = type;
+                        editorstate = EDITORSTATE_PLACE_TILE;
+                    }
+                }
+            }
+
+            for (size_t i = 0; i < __MONSTER_ENUM_LENGTH__; i++)
+            {
+                MonsterType      type      = (MonsterType) i;
+                MonsterTypeInfo *type_info = monster_registry_lookup_type(type);
+
+                char   option_text[20];
+                size_t option_text_length;
+
+                sprintf(option_text, "%li %s", i, type_info->name);
+                option_text_length = strlen(option_text);
+
+                TCOD_console_print(0, 22, i, option_text);
+
+                // Check if the mouse is over the option and highlight it.
+                if (mouse.cx >= 22 && mouse.cx < 22 + option_text_length && mouse.cy == i)
+                {
+                    for (size_t j = 0; j < option_text_length; j++)
+                    {
+                        render_swap_foreground_and_background(0, 22 + j, i);
+                    }
+
+                    if (mouse.lbutton_pressed)
+                    {
+                        editor_monstertype = type;
+                        editorstate = EDITORSTATE_PLACE_MONSTER;
+                    }
+                }
+            }
+
+            break;
+        }
+
+
+        
+        default: break;
+    }
+
+    TCOD_console_flush();
 }
 
 
