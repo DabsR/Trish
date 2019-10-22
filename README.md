@@ -5,7 +5,10 @@ Trish, the name, is an intelligently put-together acronym meaning, "The Rogue-li
 Set in a futuristic jazzy setting akin to the 1920's, you are a detective investigating an interstellar mafia's headquarters.
 
 # Building for Windows
-Before you can build, you must have the Developer Command Prompt installed via some recent version of Visual Studio (2015-2019) as well as Python 3. Run the python-win-x86.py file from the Developer Command Prompt. You dont need compat_stupid.h and comapat_stupid.c so you may replace them with empty versions of themselves.
+1) Ensure you have the Microsoft Visual Studio Developer Command Prompt installed. (https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
+1) Ensure you have Python 3 installed. (https://www.python.org/downloads/)
+1) Launch the Developer Command Prompt in or navigate to the `Trish/Build/` directory.
+1) Run the command `python build-win-x86.py --autorun`. The game will automatically run upon compiling successfuly.
 
 # Building for MacOS
 1) Install libtcod's dependencies via [homebrew](https://brew.sh)
