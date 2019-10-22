@@ -33,7 +33,7 @@ void render_map(Map *map, MapView *view)
             // Entities such as the player, monsters, and items
             // are drawn over the cell if present. Otherwise, we
             // draw the 'sprite' of the tile.
-            if (tile_is_occupied(tile))
+            if (tile_is_occupied(tile) && view->render_entities)
             {
                 int32_t entity_draw_count = 0;
 

@@ -58,12 +58,13 @@ typedef enum EditorState
 
 } EditorState;
 
-EditorState editorstate        = EDITORSTATE_PLACE_TILE;
-Tile       *selected_tile      = NULL;
-int32_t     select_x           = 0;
-int32_t     select_y           = 0;
-TileType    editor_tiletype    = TILE_AIR;
-MonsterType editor_monstertype = MONSTER_SLIME;
+EditorState editorstate             = EDITORSTATE_PLACE_TILE;
+EditorState editorstate_before_pick = EDITORSTATE_PLACE_TILE;
+Tile       *selected_tile           = NULL;
+int32_t     select_x                = 0;
+int32_t     select_y                = 0;
+TileType    editor_tiletype         = TILE_AIR;
+MonsterType editor_monstertype      = MONSTER_SLIME;
 
 
 
@@ -117,17 +118,20 @@ void simulate_editor()
 
     if (key.vk == TCODK_TAB)
     {
-        editorstate = EDITORSTATE_PICK;
+        if (editorstate == EDITORSTATE_PICK)
+        {
+            editorstate = editorstate_before_pick;
+        }
+        else
+        {
+            editorstate = EDITORSTATE_PICK;
+            editorstate_before_pick = editorstate;
+        }
     }
 
     if (key.vk == TCODK_1)
     {
-        editorstate = EDITORSTATE_PLACE_TILE;
-    }
-
-    if (key.vk == TCODK_2)
-    {
-        editorstate = EDITORSTATE_PLACE_MONSTER;
+        mapview.render_entities = !mapview.render_entities;
     }
 
     TCOD_console_clear(0);
@@ -164,6 +168,13 @@ void simulate_editor()
                     }
                     else if (editorstate == EDITORSTATE_PLACE_MONSTER)
                     {
+                        // If we are placing a monster in a solid tile, make it
+                        // compatible with that tile.
+                        if (selected_tile->type_info->is_solid)
+                        {
+                            selected_tile->type_info = tile_registry_lookup_type(TILE_FLOOR);
+                        }
+
                         if (selected_tile->monster)
                         {
                             selected_tile->monster->type_info = monster_registry_lookup_type(editor_monstertype);
@@ -183,6 +194,31 @@ void simulate_editor()
             {
                 render_mask_xor(0, mouse.cx, mouse.cy, TCOD_white);
             }
+
+            if (mapview.render_entities)
+            {
+                // @Incomplete: Still using the view macros here! Migrate to view structures.
+                TCOD_console_printf(0, STATSVIEW_X, STATSVIEW_Y, "Entities (Show)");
+            }
+            else
+            {
+                // @Incomplete: Still using the view macros here! Migrate to view structures.
+                TCOD_console_printf(0, STATSVIEW_X, STATSVIEW_Y, "Entities (Hide)");
+            }
+
+            if (editorstate == EDITORSTATE_PLACE_TILE)
+            {
+                // @Incomplete: Still using the view macros here! Migrate to view structures.
+                TileTypeInfo *type_info = tile_registry_lookup_type(editor_tiletype);
+                TCOD_console_printf(0, STATSVIEW_X, STATSVIEW_Y + 1, "Placing tile %s", type_info->name);
+            }
+            else if (editorstate == EDITORSTATE_PLACE_MONSTER)
+            {
+                MonsterTypeInfo *type_info = monster_registry_lookup_type(editor_monstertype);
+                // @Incomplete: Still using the view macros here! Migrate to view structures.
+                TCOD_console_printf(0, STATSVIEW_X, STATSVIEW_Y + 1, "Placing monster %s", type_info->name);
+            }
+            
 
             break;
         }
@@ -295,7 +331,8 @@ int main(int argc, char **argv)
                 mapview.x       = MAPVIEW_X;
                 mapview.y       = MAPVIEW_Y;
                 mapview.width   = MAPVIEW_WIDTH;
-                mapview.height  = MAPVIEW_HEIGHT;                
+                mapview.height  = MAPVIEW_HEIGHT;    
+                mapview.render_entities = 1;            
                 mapview.console = 0;
 
                 monster_create(MONSTER_SLIME, map, 1, 1);
