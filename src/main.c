@@ -57,6 +57,7 @@ typedef enum EditorState
     EDITORSTATE_PICK,
     EDITORSTATE_PLACE_TILE,
     EDITORSTATE_PLACE_MONSTER,
+    EDITORSTATE_PLACE_PLAYER,
     EDITORSTATE_PAUSE
 
 } EditorState;
@@ -143,6 +144,7 @@ void simulate_editor()
     {
         case EDITORSTATE_PLACE_TILE:
         case EDITORSTATE_PLACE_MONSTER:
+        case EDITORSTATE_PLACE_PLAYER:
         {
             screen_to_map(&map_view, mouse.cx, mouse.cy, &select_x, &select_y);
             selected_tile = map_get_tile(map, select_x, select_y);
@@ -168,6 +170,13 @@ void simulate_editor()
                         {
                             monster_free(selected_tile->monster, map);
                         }
+                        else if (selected_tile->type_info->is_solid && selected_tile->player)
+                        {
+                            player_free(selected_tile->player);
+                            selected_tile->player = NULL;
+                            map->player = NULL;
+                            player = NULL;
+                        }
                     }
                     else if (editorstate == EDITORSTATE_PLACE_MONSTER)
                     {
@@ -187,6 +196,33 @@ void simulate_editor()
                         {
                             Monster *monster = monster_create(editor_monstertype, map, select_x, select_y);
                             eventlog_print(TCOD_white, "Created new %s at x %i y %i", monster->type_info->name, select_x, select_y);
+                        }
+                    }
+                    else if (editorstate == EDITORSTATE_PLACE_PLAYER)
+                    {
+                        // If we are placing the player in a solid tile, make it
+                        // compatible with that tile.
+                        if (selected_tile->type_info->is_solid)
+                        {
+                            selected_tile->type_info = tile_registry_lookup_type(TILE_FLOOR);
+                        }
+
+                        if (selected_tile->monster)
+                        {
+                            monster_free(selected_tile->monster, map);
+                        }
+
+                        if (player)
+                        {
+                            player->tile->player = NULL;
+                            player->tile = selected_tile;
+                            player->tile->player = player;
+                            player->x = select_x;
+                            player->y = select_y;
+                        }
+                        else
+                        {
+                            player = player_create(map, select_x, select_y);
                         }
                     }
                 }
@@ -218,6 +254,10 @@ void simulate_editor()
             {
                 MonsterTypeInfo *type_info = monster_registry_lookup_type(editor_monstertype);
                 TCOD_console_printf(0, stats_view.x, stats_view.y + 1, "Placing monster %s", type_info->name);
+            }
+            else if (editorstate == EDITORSTATE_PLACE_PLAYER)
+            {
+                TCOD_console_printf(0, stats_view.x, stats_view.y + 1, "Placing player");
             }
             
 
@@ -287,6 +327,22 @@ void simulate_editor()
                         editor_monstertype = type;
                         editorstate = EDITORSTATE_PLACE_MONSTER;
                     }
+                }
+            }
+
+            TCOD_console_print(0, 0, WINDOW_HEIGHT - 1, "@ Player");
+
+            // Check if the mouse is over the option and highlight it.
+            if (mouse.cx >= 0 && mouse.cx < 8 && mouse.cy == WINDOW_HEIGHT - 1)
+            {
+                for (size_t j = 0; j < 8; j++)
+                {
+                    render_swap_foreground_and_background(0, j, WINDOW_HEIGHT - 1);
+                }
+
+                if (mouse.lbutton_pressed)
+                {
+                    editorstate = EDITORSTATE_PLACE_PLAYER;
                 }
             }
 

@@ -41,7 +41,10 @@ void map_free(Map *map)
 {
     map->is_being_freed = 1;
 
-    player_free(map->player);
+    if (map->player != NULL)
+    {
+        player_free(map->player);
+    }
 
     LinkedNode *node = map->monsters->head;
     while (node)
