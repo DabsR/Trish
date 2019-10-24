@@ -80,6 +80,49 @@ Tile * map_get_tile(Map *map, int32_t x, int32_t y)
     }
 }
 
+NeighbourInfo map_get_tile_neighbours(Map *map, int32_t x, int32_t y)
+{
+    NeighbourInfo neighbour_info;
+    
+    neighbour_info.origin = map_get_tile(map, x, y);
+    neighbour_info.north  = map_get_tile(map, x, y - 1);
+    neighbour_info.east   = map_get_tile(map, x + 1, y);
+    neighbour_info.south  = map_get_tile(map, x, y + 1);
+    neighbour_info.west   = map_get_tile(map, x - 1, y);
+    neighbour_info.count  = 0;
+
+    if (neighbour_info.north) neighbour_info.count += 1;
+    if (neighbour_info.east)  neighbour_info.count += 1;
+    if (neighbour_info.south) neighbour_info.count += 1;
+    if (neighbour_info.west)  neighbour_info.count += 1;
+
+    return neighbour_info;
+}
+
+NeighbourInfo map_get_tile_neighbours_of_type(Map *map, int32_t x, int32_t y, TileType type)
+{
+    NeighbourInfo neighbour_info;
+    
+    neighbour_info.origin = map_get_tile(map, x, y);
+    neighbour_info.north  = map_get_tile(map, x, y - 1);
+    neighbour_info.east   = map_get_tile(map, x + 1, y);
+    neighbour_info.south  = map_get_tile(map, x, y + 1);
+    neighbour_info.west   = map_get_tile(map, x - 1, y);
+    neighbour_info.count  = 0;
+
+    if (!(neighbour_info.north && neighbour_info.north->type_info->type == type)) neighbour_info.north = NULL;
+    if (!(neighbour_info.east  && neighbour_info.east->type_info->type  == type)) neighbour_info.east  = NULL;
+    if (!(neighbour_info.south && neighbour_info.south->type_info->type == type)) neighbour_info.south = NULL;
+    if (!(neighbour_info.west  && neighbour_info.west->type_info->type  == type)) neighbour_info.west  = NULL;
+
+    if (neighbour_info.north) neighbour_info.count += 1;
+    if (neighbour_info.east)  neighbour_info.count += 1;
+    if (neighbour_info.south) neighbour_info.count += 1;
+    if (neighbour_info.west)  neighbour_info.count += 1;
+
+    return neighbour_info;
+}
+
 void screen_to_map(MapView *view, int32_t cx, int32_t cy, int32_t *out_tx, int32_t *out_ty)
 {
     *out_tx = cx - view->x;

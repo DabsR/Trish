@@ -8,12 +8,30 @@
 #include "view.h"
 #include "monster.h"
 #include "player.h"
+#include "event_log.h"
 
 
 
 void render_events(EventView *view)
 {
-    // @Incomplete Render event log here.
+    // EventLog *eventlog = eventlog_open();
+
+    for (size_t i = 0; i < eventlog.number_of_messages; i++)
+    {
+        assert(eventlog.messages[i].text);
+
+        if (i >= view->height) break;
+        
+        int32_t      x     = view->x;
+        int32_t      y     = view->y + view->height - 1 - i;
+        char        *text  = eventlog.messages[i].text;
+        TCOD_color_t color = eventlog.messages[i].text_color;
+
+        if (y < 0) break;
+        
+        TCOD_console_set_color_control(TCOD_COLCTRL_1, color, TCOD_black);
+        TCOD_console_print(view->console, x, y, "%c%s%c", TCOD_COLCTRL_1, text, TCOD_COLCTRL_STOP);
+    }
 }
 
 void render_map(Map *map, MapView *view)
@@ -67,9 +85,97 @@ void render_map(Map *map, MapView *view)
             {
                 switch (tile->type_info->type)
                 {
-                    // @Incomplete: Insert floor tile checkerboard
+                    case TILE_FLOOR:
+                    {
+                        // @Incomplete: These colors should be constant somewhere.
 
-                    // @Incomplete: Insert wall tile visual connectivity
+                        TCOD_color_t color1;
+                        color1.r = 20;
+                        color1.g = 20;
+                        color1.b = 20;
+                        
+                        TCOD_color_t color2;
+                        color2.r = 10;
+                        color2.g = 10;
+                        color2.b = 10;
+
+
+                        if ((x + y) % 2)
+                        {
+                            TCOD_console_set_char_background(0, draw_x, draw_y, color1, TCOD_BKGND_SET);
+                            TCOD_console_set_char(0, draw_x, draw_y, ' ');
+                        }
+                        else
+                        {
+                            TCOD_console_set_char_background(0, draw_x, draw_y, color2, TCOD_BKGND_SET);
+                            TCOD_console_set_char(0, draw_x, draw_y, ' ');
+                        }
+                        
+                        break;
+                    }
+
+                    case TILE_WALL:
+                    {
+                        // @Incomplete: This algorithm can get expensive very quickly. We need
+                        // to optimise this with some kind of caching of the state of tiles. For
+                        // example, when we change a tile, we should update it and those around it
+                        // to check for like-neighbours.
+
+                        unsigned char symbol;
+
+                        NeighbourInfo neighbour_info = map_get_tile_neighbours_of_type(map, x, y, TILE_WALL);
+                        Tile *north   = neighbour_info.north;
+                        Tile *east    = neighbour_info.east;
+                        Tile *south   = neighbour_info.south;
+                        Tile *west    = neighbour_info.west;
+                        int32_t count = neighbour_info.count;
+
+                        switch (count)
+                        {
+                            case 1:
+                            {
+                                if      (north) symbol = TCOD_CHAR_DVLINE;
+                                else if (east)  symbol = TCOD_CHAR_DHLINE;
+                                else if (south) symbol = TCOD_CHAR_DVLINE;
+                                else if (west)  symbol = TCOD_CHAR_DHLINE;
+                                else            symbol = '?';
+
+                                break;
+                            }
+
+                            case 2:
+                            {
+                                if      (north && south) symbol = TCOD_CHAR_DVLINE;
+                                else if (east  && west)  symbol = TCOD_CHAR_DHLINE;
+                                else if (north && east)  symbol = TCOD_CHAR_DSW;
+                                else if (east  && south) symbol = TCOD_CHAR_DNW;
+                                else if (south && west)  symbol = TCOD_CHAR_DNE;
+                                else if (west  && north) symbol = TCOD_CHAR_DSE;
+                                else                     symbol = '?';
+                                
+                                break;
+                            }
+
+                            case 3:
+                            {
+                                if      (north && east  && south) symbol = TCOD_CHAR_DTEEE;
+                                else if (east  && south && west)  symbol = TCOD_CHAR_DTEES;
+                                else if (south && west  && north) symbol = TCOD_CHAR_DTEEW;
+                                else if (west  && north && east)  symbol = TCOD_CHAR_DTEEN;
+                                else                              symbol = '?';
+
+                                break;
+                            }
+
+                            case 4:
+                            default: symbol = TCOD_CHAR_DCROSS; break;
+                        }
+
+                        TCOD_console_set_char_foreground(0, draw_x, draw_y, tile->type_info->fore_color);
+                        TCOD_console_set_char(0, draw_x, draw_y, symbol);
+
+                        break;
+                    }
 
                     default: // This means there is not a special render routine for this tile.
                     {

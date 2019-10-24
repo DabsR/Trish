@@ -7,6 +7,7 @@
 #include "player.h"
 #include "monster.h"
 #include "utilities.h"
+#include "event_log.h"
 #include "view.h"
 #include "render.h"
 
@@ -184,12 +185,14 @@ void simulate_editor()
                         }
                         else
                         {
-                            monster_create(editor_monstertype, map, select_x, select_y);
+                            Monster *monster = monster_create(editor_monstertype, map, select_x, select_y);
+                            eventlog_print(TCOD_white, "Created new %s at x %i y %i", monster->type_info->name, select_x, select_y);
                         }
                     }
                 }
             }
 
+            render_events(&event_view);
             render_map(map, &map_view);
             
             if (selected_tile)
@@ -298,8 +301,6 @@ void simulate_editor()
     TCOD_console_flush();
 }
 
-
-
 int main(int argc, char **argv)
 {
     do
@@ -316,12 +317,17 @@ int main(int argc, char **argv)
             case APPSTATE_INIT:
             {
                 TCOD_console_init_root(WINDOW_WIDTH, WINDOW_HEIGHT, "Trish", false, TCOD_RENDERER_SDL2);
+                TCOD_console_set_custom_font("terminal.png", 0, 16, 16);
 
                 tile_registry_initialise();
                 monster_registry_initialise();
 
                 map     = map_create(40, 22);
                 player  = player_create(map, 3, 5);
+
+
+
+                eventlog_initialise(32);
 
 
                 
@@ -373,6 +379,7 @@ int main(int argc, char **argv)
             case APPSTATE_QUIT:
             {
                 map_free(map);
+                eventlog_terminate();
 
                 break;
             }

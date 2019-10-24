@@ -13,6 +13,8 @@ if os.name != 'nt':
                       # Option Name
 auto_run_game = False # --autorun
 skip_compile  = False # --skip-compile
+debug         = False # --debug
+skip_copy     = False # --skip-copy
 
 include_directories = [
     '../Vendor/Libtcod/include/'
@@ -49,9 +51,11 @@ if len(sys.argv) > 0:
         auto_run_game = True
     if '--skip-compile' in sys.argv:
         skip_compile = True
+    if '--debug' in sys.argv:
+        debug = True
 
 if not os.path.exists(output_directory):
-    os.mkdir(output_directory)
+    os.makedirs(output_directory)
 
 include_directory_arguments = ''
 library_directory_arguments = ''
@@ -79,7 +83,12 @@ import sys
 success = True
 
 if (skip_compile == False):
-    command = f'cl.exe -DUNICODE -D_UNICODE /Fe"{output_directory}{output_file_name}" {include_directory_arguments} {source_file_arguments} /link {library_directory_arguments} {library_arguments}'
+    command = 'cl.exe'
+
+    if debug:
+        command += '/DDEBUG /Zi '
+
+    command += f'/Fe"{output_directory}{output_file_name}" {include_directory_arguments} {source_file_arguments} /link {library_directory_arguments} {library_arguments}'
     success = (os.system(command) == 0)
 
     if success:
@@ -93,18 +102,23 @@ if (skip_compile == False):
             os.remove(file_name)
 
 if success:
-    for directory in library_directories:
-        file_names = os.listdir(directory)
 
-        for file_name in file_names:
-            if file_name.endswith('.dll'):
+    if not skip_copy:
+        for directory in library_directories:
+            file_names = os.listdir(directory)
+
+            for file_name in file_names:
+                if file_name.endswith('.dll'):
+                    copyfile(os.path.join(directory, file_name), os.path.join(output_directory, file_name))
+
+        for directory in resource_directories:
+            file_names = os.listdir(directory)
+
+            for file_name in file_names:
                 copyfile(os.path.join(directory, file_name), os.path.join(output_directory, file_name))
-
-    for directory in resource_directories:
-        file_names = os.listdir(directory)
-
-        for file_name in file_names:
-            copyfile(os.path.join(directory, file_name), os.path.join(output_directory, file_name))
     
     if (auto_run_game):
-        os.system(f'"{executable_path}"')
+        print(output_directory)
+        os.chdir(output_directory)
+        os.system(f'"{output_file_name}"')
+        os.system('popd')

@@ -9,6 +9,7 @@
 // Forward declarations
 typedef struct Player Player;
 typedef struct Map Map;
+typedef struct EventLog EventLog;
 typedef struct EventView EventView;
 typedef struct MapView MapView;
 typedef struct StatsView StatsView;

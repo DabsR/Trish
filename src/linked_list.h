@@ -1,6 +1,8 @@
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H 1
 
+#include <stdbool.h>
+
 typedef struct LinkedNode
 {
     void *data;
@@ -22,6 +24,7 @@ LinkedList * linkedlist_create ();
 void         linkedlist_free   (LinkedList *list);
 void         linkedlist_push   (LinkedList *list, void *data);
 void         linkedlist_pop    (LinkedList *list);
+bool         linkedlist_find   (LinkedList *list, void *data);
 void         linkedlist_remove (LinkedList *list, void *data);
 
 #endif

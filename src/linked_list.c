@@ -66,6 +66,24 @@ void linkedlist_pop(LinkedList *list)
     }
 }
 
+bool linkedlist_find(LinkedList *list, void *data)
+{
+    LinkedNode *node = list->head;
+    while (node)
+    {
+        if (node->data == data)
+        {
+            return true;
+        }
+        else
+        {
+            node = node->next;
+        }   
+    }
+
+    return false;
+}
+
 void linkedlist_remove(LinkedList *list, void *data)
 {
     LinkedNode *node = list->head;
