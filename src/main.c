@@ -464,7 +464,9 @@ int main(int argc, char **argv)
 
             case APPSTATE_QUIT:
             {
+                if (player) player_free(player, map);
                 map_free(map);
+                
                 eventlog_terminate();
 
                 break;
