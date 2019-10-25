@@ -72,6 +72,89 @@ MonsterType editor_monstertype      = MONSTER_SLIME;
 
 
 
+void place_player(int32_t x, int32_t y)
+{
+    if (player == NULL)
+    {
+        player = player_create(map, x, y);
+    }
+    else
+    {
+        Tile *tile = map_get_tile(map, x, y);
+        if (tile)
+        {
+            player->tile->player = NULL;
+            player->tile = tile;
+            player->tile->player = player;
+            player->x = x;
+            player->y = y;
+        }
+
+        if (tile->type_info->is_solid)
+        {
+            TileTypeInfo *floor_type_info = tile_registry_lookup_type(TILE_FLOOR);
+            tile->type_info = floor_type_info;
+        }
+
+        if (tile->monster)
+        {
+            monster_free(tile->monster, map);
+        }
+    }
+}
+
+void place_monster(MonsterType type, int32_t x, int32_t y)
+{
+    Tile *tile = map_get_tile(map, x, y);
+    if (tile)
+    {
+        Monster *monster = tile->monster;
+
+        if (monster == NULL)
+        {
+            monster_create(type, map, x, y);
+        }
+        else
+        {
+            MonsterTypeInfo *type_info = monster_registry_lookup_type(type);
+            monster->type_info = type_info;
+            monster->health    = type_info->health;
+        }
+
+        if (tile->type_info->is_solid)
+        {
+            TileTypeInfo *floor_type_info = tile_registry_lookup_type(TILE_FLOOR);
+            tile->type_info = floor_type_info;
+        }
+
+        if (tile->player)
+        {
+            player_free(player, map);
+            player = NULL;
+        }
+    }
+}
+
+void place_tile(TileType type, int32_t x, int32_t y)
+{
+    Tile *tile = map_get_tile(map, x, y);
+    if (tile)
+    {
+        TileTypeInfo *type_info = tile_registry_lookup_type(type);
+        tile->type_info = type_info;
+        
+        if (type_info->is_solid && tile->player)
+        {
+            player_free(player, map);
+            player = NULL;
+        }
+        else if (type_info->is_solid && tile->monster)
+        {
+            monster_free(tile->monster, map);
+        }
+    }
+}
+
 void simulate_game()
 {
     switch (gamestate)
@@ -162,68 +245,15 @@ void simulate_editor()
                 {
                     if (editorstate == EDITORSTATE_PLACE_TILE)
                     {
-                        selected_tile->type_info = tile_registry_lookup_type(editor_tiletype);
-                        
-                        // @Incomplete: Maybe we want ghost-like enemies?
-                        // Remove the monster if the tile is solid because that is impossible.
-                        if (selected_tile->type_info->is_solid && selected_tile->monster)
-                        {
-                            monster_free(selected_tile->monster, map);
-                        }
-                        else if (selected_tile->type_info->is_solid && selected_tile->player)
-                        {
-                            player_free(selected_tile->player);
-                            selected_tile->player = NULL;
-                            map->player = NULL;
-                            player = NULL;
-                        }
+                        place_tile(editor_tiletype, select_x, select_y);
                     }
                     else if (editorstate == EDITORSTATE_PLACE_MONSTER)
                     {
-                        // If we are placing a monster in a solid tile, make it
-                        // compatible with that tile.
-                        if (selected_tile->type_info->is_solid)
-                        {
-                            selected_tile->type_info = tile_registry_lookup_type(TILE_FLOOR);
-                        }
-
-                        if (selected_tile->monster)
-                        {
-                            selected_tile->monster->type_info = monster_registry_lookup_type(editor_monstertype);
-                            selected_tile->monster->health    = selected_tile->monster->type_info->health;
-                        }
-                        else
-                        {
-                            Monster *monster = monster_create(editor_monstertype, map, select_x, select_y);
-                            eventlog_print(TCOD_white, "Created new %s at x %i y %i", monster->type_info->name, select_x, select_y);
-                        }
+                        place_monster(editor_monstertype, select_x, select_y);
                     }
                     else if (editorstate == EDITORSTATE_PLACE_PLAYER)
                     {
-                        // If we are placing the player in a solid tile, make it
-                        // compatible with that tile.
-                        if (selected_tile->type_info->is_solid)
-                        {
-                            selected_tile->type_info = tile_registry_lookup_type(TILE_FLOOR);
-                        }
-
-                        if (selected_tile->monster)
-                        {
-                            monster_free(selected_tile->monster, map);
-                        }
-
-                        if (player)
-                        {
-                            player->tile->player = NULL;
-                            player->tile = selected_tile;
-                            player->tile->player = player;
-                            player->x = select_x;
-                            player->y = select_y;
-                        }
-                        else
-                        {
-                            player = player_create(map, select_x, select_y);
-                        }
+                        place_player(select_x, select_y);
                     }
                 }
             }

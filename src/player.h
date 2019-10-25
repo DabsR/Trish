@@ -30,7 +30,7 @@ typedef struct MoveResult
 
 Player *    player_create(Map *map, int32_t x, int32_t y);
 MoveResult  player_move(Player *player, Map *map, int32_t dx, int32_t dy);
-void        player_free(Player *player);
+void        player_free(Player *player, Map *map);
 
 #endif
 

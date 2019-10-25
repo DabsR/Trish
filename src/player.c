@@ -63,10 +63,15 @@ MoveResult player_move(Player *player, Map *map, int32_t dx, int32_t dy)
     return moveResult;
 }
 
-void player_free(Player *player)
+void player_free(Player *player, Map *map)
 {
-    assert(player && player->tile->player == player);
+    assert(map);
+    assert(player);
+    assert(map->player == player);
+    assert(player->tile->player == player);
 
+    map->player = NULL;
     player->tile->player = NULL;
+    
     free(player);
 }
